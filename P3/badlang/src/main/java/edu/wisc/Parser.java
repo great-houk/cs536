@@ -15,7 +15,5 @@ import java.util.List;
  * 5. Report syntax errors with meaningful messages
  */
 public class Parser {
-    
+
 }
-
-

@@ -15,7 +15,5 @@ import java.util.List;
  * 5. Track line numbers for error reporting
  */
 public class Lexer {
-    
+
 }
-
-
