@@ -4,6 +4,26 @@
 
 In this assignment, you will implement a **lexer** (tokenizer) and **parser** for the badlang programming language.
 
+## How to Build and Run
+
+To build the project, run the following command:
+
+```bash
+javac -d target/classes src/main/java/edu/wisc/*.java
+```
+
+To run the project, run the following command:
+
+```bash
+java -cp target/classes edu.wisc.Main <filename>
+```
+
+For example:
+
+```bash
+java -cp target/classes edu.wisc.Main test_programs/factorial.bl
+```
+
 ## Learning Goals
 
 This assignment has several primary learning objectives:
@@ -259,7 +279,7 @@ Your assignment will be graded on:
    - Coverage: test files cover all language features
    - Quantity: at least 5-10 well-designed test files
    - Edge cases: tests boundary conditions and errors
-   - Main.java: correctly reads files and processes them through lexer/parser
+   - Main.java: correctly reads files and and processes them through lexer/parser
 
 
 ## Optional Enhancement: Hook Up Your Interpreter

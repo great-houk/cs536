@@ -1,15 +1,10 @@
 package edu.wisc;
 
-/**
- * Represents a single token produced by the lexer.
- * 
- * Implement this class according to your lexical analysis needs.
- */
 public class Token {
 
 	public enum TokenType {
 		//keywords
-		INT, FUN, IF, ELSE, WHILE, RETURN, PRINT, TRUE, FALSE, ASSIGN,
+		INT, BOOL, FUN, IF, ELSE, WHILE, RETURN, PRINT, TRUE, FALSE, ASSIGN,
 		//operators
 		MINUS, PLUS, TIMES, DIVIDE, AND_AND, OR_OR, EQUAL_EQUAL, BANG_EQUAL, BANG, LESS_THAN, GREATER_THAN, LESS_EQUAL,
 		GREATER_EQUAL,
