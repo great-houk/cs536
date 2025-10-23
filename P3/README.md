@@ -1,5 +1,11 @@
 # P3: Badlang Lexer and Parser
 
+Kristen Menge and Tyler Richard
+The lexer and parser were generated using antlr based on the Badlang.g4 that we made. 
+
+We did initially create a Token.java, however realized that it was causing issues with the generated files since it generates its own Token interface so we removed it from the project. 
+
+
 ## Overview
 
 In this assignment, you will implement a **lexer** (tokenizer) and **parser** for the badlang programming language.

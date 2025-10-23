@@ -1,0 +1,23 @@
+# Compiled class files
+*.class
+
+# ANTLR generated artifacts
+*.interp
+*.tokens
+
+# Output folders
+target
+out
+bin
+
+# JARs
+lib
+
+# IDE files
+.vscode
+.idea
+.iml
+
+# System files
+.DS_Store
+Thumbs.db
