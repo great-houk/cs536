@@ -1,7 +1,12 @@
+// expect: 5
+// expect: 4
+// expect: 3
+// expect: 2
+// expect: 1
+// expect: 0
 int x = 5;
 while (x > 0) {
   print x;
   x = x - 1;
 }
 print x;
-

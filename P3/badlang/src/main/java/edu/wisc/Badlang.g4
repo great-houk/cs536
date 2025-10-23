@@ -1,7 +1,4 @@
 grammar Badlang;
-@header {
-package edu.wisc;
-}
 
 
 // =========================
@@ -72,7 +69,7 @@ returnStmt
     ;
 
 block
-    : LBRACE statement* RBRACE
+    : LBRACE (declaration | statement)* RBRACE
     ;
 
 // ------- Expressions (precedence via stratification) -------

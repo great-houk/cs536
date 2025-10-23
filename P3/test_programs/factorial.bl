@@ -1,3 +1,4 @@
+// expect: 120
 fun int factorial(int n) {
   if (n <= 1) {
     return 1;
@@ -8,4 +9,3 @@ fun int factorial(int n) {
 
 int result = factorial(5);
 print result;
-

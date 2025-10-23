@@ -185,6 +185,64 @@ You are provided with:
 - **Main Class** (`Main.java`): Entry point for testing with example code structure
 - **Example Test Files** (`test_programs/*.bl`): Sample badlang programs to help you get started
 
+## Building the Project
+
+There are two ways to compile the project: using Maven (recommended) or manually with `javac`.
+
+### Building with Maven
+
+This project is configured to use Maven. To compile the project, run the following command from the `badlang` directory:
+
+```bash
+mvn compile
+```
+
+This will download the necessary dependencies and compile the source code into the `badlang/target/classes` directory.
+
+To run the test suite after compiling, execute the following command from the project's root directory:
+
+```bash
+mvn -f badlang/pom.xml exec:java -Dexec.mainClass="edu.wisc.Main"
+```
+
+### Building Manually
+
+If you do not have Maven installed, you can compile the project manually.
+
+1.  **Download the ANTLR 4 Runtime:**
+    You will need the ANTLR 4 runtime jar file. You can download it from Maven Central. This project was built with version 4.13.1.
+
+    [Download ANTLR 4.13.1 Runtime Jar](https://repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.13.1/antlr4-runtime-4.13.1.jar)
+
+    Place the downloaded jar file (e.g., `antlr4-runtime-4.13.1.jar`) into a `lib` directory inside the `badlang` directory.
+
+2.  **Compile the code:**
+    Run the `javac` compiler from the project's root directory. You'll need to specify the classpath to include the ANTLR runtime jar and set the output directory for the compiled classes.
+
+    On Windows:
+    ```bash
+    javac -cp "badlang\lib\antlr4-runtime-4.13.1.jar" -d badlang/target/classes badlang/src/main/java/edu/wisc/*.java
+    ```
+
+    On macOS/Linux:
+    ```bash
+    javac -cp "badlang/lib/antlr4-runtime-4.13.1.jar" -d badlang/target/classes badlang/src/main/java/edu/wisc/*.java
+    ```
+    *(Note: The command above is simplified. You might need to specify each .java file or use a wildcard depending on your shell.)*
+
+3.  **Run the interpreter:**
+    Once compiled, you can run the interpreter or the test suite. To run the test suite, execute the following command from the project's root directory:
+
+    On Windows:
+    ```bash
+    java -cp "badlang\target\classes;badlang\lib\antlr4-runtime-4.13.1.jar" edu.wisc.Main
+    ```
+
+    On macOS/Linux:
+    ```bash
+    java -cp "badlang/target/classes:badlang/lib/antlr4-runtime-4.13.1.jar" edu.wisc.Main
+    ```
+
 ## Deliverables
 
 Submit a zip file of the `P3` folder containing:

@@ -249,6 +249,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
 		this.env = old;
 
 		// Return
+		if (ret == null) {
+			throw new RuntimeException("Function '" + function.name + "' must return a value.");
+		}
+		if (ret.value == null) {
+			throw new RuntimeException("Function '" + function.name + "' must return a value, but returned null.");
+		}
 		switch (function.returnType) {
 			case INT:
 				assertType(Integer.class, ret.value);
@@ -265,12 +271,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
 		for (var s : stmts) {
 			var ret = s.accept(this);
 			if (ret != null)
-				return ret;
+				throw new RuntimeException("Cannot return from top-level code.");
 		}
 		return null;
-	}
-
-	public void clear_env() {
-		this.env = new Environment();
 	}
 }

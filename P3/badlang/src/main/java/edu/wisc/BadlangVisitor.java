@@ -1,7 +1,5 @@
-// Generated from Badlang.g4 by ANTLR 4.13.1
-
+// Generated from C:/Users/tyler/Programming/cs536/p3/badlang/src/main/java/edu/wisc/Badlang.g4 by ANTLR 4.13.1
 package edu.wisc;
-
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
