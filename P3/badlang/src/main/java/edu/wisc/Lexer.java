@@ -26,8 +26,8 @@ public class Lexer {
 		keywords.put("while", Token.TokenType.WHILE);
 		keywords.put("return", Token.TokenType.RETURN);
 		keywords.put("print", Token.TokenType.PRINT);
-		keywords.put("true", Token.TokenType.TRUE);
-		keywords.put("false", Token.TokenType.FALSE);
+		keywords.put("true", Token.TokenType.BOOLEAN);
+		keywords.put("false", Token.TokenType.BOOLEAN);
 	}
 
 	public Lexer(String source) {

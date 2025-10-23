@@ -3,6 +3,7 @@ int b = 5;
 int sum = a + b;
 int product = a * b;
 int difference = a - b;
+int combo = a * b - a / b + 5;
 print sum;
 print product;
 print difference;

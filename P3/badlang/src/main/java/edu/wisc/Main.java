@@ -8,13 +8,11 @@ import java.util.List;
 
 public class Main {
 	public static void main(String[] args) throws IOException {
-		if (args.length > 1) {
-			System.out.println("Usage: jbadlang [script]");
-			System.exit(64);
-		} else if (args.length == 1) {
+		if (args.length == 1) {
 			runFile(args[0]);
 		} else {
-			// TODO: implement runPrompt()
+			System.out.println("Usage: jbadlang [script]");
+			System.exit(64);
 		}
 	}
 
@@ -29,8 +27,8 @@ public class Main {
 		Parser parser = new Parser(tokens);
 		List<Stmt> statements = parser.parse();
 
-		// For now, just print the AST
-		System.out.println(new AstPrinter().print(statements));
+		Interpreter intp = new Interpreter();
+		intp.interpret(statements);
 	}
 
 	static void error(int line, String message) {
