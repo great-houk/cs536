@@ -1,0 +1,3 @@
+// expect-error: Line 1: Name error: Undefined variable 'x'
+print x;
+int x = 5;

@@ -1,6 +1,7 @@
 package edu.wisc;
 
 public enum VarType {
+	ERROR,
 	INT,
 	BOOL;
 
@@ -32,6 +33,8 @@ public enum VarType {
 				return "int";
 			case BOOL:
 				return "bool";
+			case ERROR:
+				return "<unknown>";
 			default:
 				return "<<ERROR UNKNOWN>>";
 		}

@@ -1,0 +1,4 @@
+// expect-error: Line 3: Type error: Cannot apply operator '+' to types 'int' and 'bool'
+int x = 5;
+bool b = true;
+int result = x + b;

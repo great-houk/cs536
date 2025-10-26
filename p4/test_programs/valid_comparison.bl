@@ -1,0 +1,5 @@
+// expect: true
+int x = 5;
+int y = 10;
+bool result = x < y;
+print result;

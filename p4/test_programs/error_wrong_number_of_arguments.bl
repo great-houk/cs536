@@ -1,0 +1,6 @@
+// expect-error: Line 5: Type error: Function 'add' expects 2 arguments but got 1
+fun int add(int a, int b) {
+  return a + b;
+}
+
+int result = add(5);

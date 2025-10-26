@@ -1,0 +1,4 @@
+// expect-error: Line 2: Type error: Expected return type 'int', found 'bool'
+fun int getValue() {
+  return true;
+}

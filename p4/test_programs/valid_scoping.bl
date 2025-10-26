@@ -1,0 +1,8 @@
+// expect: 10
+// expect: 5
+int x = 5;
+{
+  int x = 10;
+  print x;
+}
+print x;

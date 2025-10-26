@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 class Environment {
-	private static Map<String, Stmt.Function> functions = new HashMap<>();
+	private final Map<String, Stmt.Function> functions = new HashMap<>();
 	private final Map<String, Object> values = new HashMap<>();
 	private final Environment parent;
 
@@ -16,6 +16,10 @@ class Environment {
 	// Constructor for local environment with parent
 	Environment(Environment parent) {
 		this.parent = parent;
+	}
+
+	public Environment getParent() {
+		return this.parent;
 	}
 
 	// Define a variable in this environment
@@ -56,14 +60,23 @@ class Environment {
 	}
 
 	void defineFun(String name, Stmt.Function fun) {
-		if (functions.containsKey(name))
-			throw new BadlangError("Function '" + name + "' is already defined", fun.line);
+		if (parent != null)
+			parent.defineFun(name, fun);
+		else {
+			if (functions.containsKey(name))
+				throw new BadlangError("Function '" + name + "' is already defined", fun.line);
+			functions.put(name, fun);
+		}
 	}
 
 	Stmt.Function getFun(String name, int line) {
-		if (functions.containsKey(name))
-			return functions.get(name);
+		if (parent != null)
+			return parent.getFun(name, line);
+		else {
+			if (functions.containsKey(name))
+				return functions.get(name);
 
-		throw new BadlangError("Unknown Function '" + name + "'", line);
+			throw new BadlangError("Unknown Function '" + name + "'", line);
+		}
 	}
 }

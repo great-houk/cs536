@@ -1,8 +1,6 @@
 package edu.wisc;
 
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 class ReturnValue {
 	public Object value;
@@ -13,8 +11,6 @@ class ReturnValue {
 }
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
-	// These aren't in env, because we only need one global function scope.
-	private final Map<String, Stmt.Function> functions = new HashMap<>();
 	Environment env;
 
 	Interpreter() {
@@ -58,7 +54,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
 
 	@Override
 	public ReturnValue visitFunctionStmt(Stmt.Function stmt) {
-		functions.put(stmt.name, stmt);
+		env.defineFun(stmt.name, stmt);
 		return null;
 	}
 
@@ -220,11 +216,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
 
 	@Override
 	public Object visitCallExpr(Expr.Call expr) {
-		if (!functions.containsKey(expr.name)) {
-			throw new BadlangError("Undefined function '" + expr.name + "'.", expr.line);
-		}
-
-		var function = functions.get(expr.name);
+		var function = env.getFun(expr.name, expr.line);
 		var env = new Environment(this.env);
 
 		// Check argument types

@@ -1,0 +1,2 @@
+// expect-error: Line 1: Name error: Undefined function 'factorial'
+int result = factorial(5);

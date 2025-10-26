@@ -1,0 +1,5 @@
+// expect-error: Line 2: Type error: Condition must be 'bool', found 'int'
+int x = 5;
+if (x) {
+  print x;
+}

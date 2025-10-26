@@ -70,14 +70,40 @@ public class Main {
 	private static boolean runTest(Path filePath) throws IOException {
 		String source = Files.readString(filePath);
 		String expectedOutput = getExpectedOutput(source);
+		String expectedErrors = getExpectedErrors(source);
 
 		System.setOut(capturedOut); // Capture output
 		baos.reset();
 
 		try {
 			List<Stmt> program = parseSource(source);
-			Interpreter interpreter = new Interpreter();
-			interpreter.interpret(program);
+			Checker check = new Checker();
+			var errors = check.check(program);
+			if (!expectedErrors.isEmpty()) {
+				System.setOut(originalOut);
+				String actualErrors = errors.stream().map(BadlangError::getLocalizedMessage).collect(Collectors.joining("\n"));
+				if (actualErrors.equals(expectedErrors)) {
+					originalOut.println("[PASS] " + filePath.getFileName());
+					return true;
+				} else {
+					originalOut.println("[FAIL] " + filePath.getFileName());
+					originalOut.println("  Expected errors: " + expectedErrors);
+					originalOut.println("  Actual errors  : " + actualErrors);
+					return false;
+				}
+			}
+			if (errors.size() == 0) {
+				Interpreter interpreter = new Interpreter();
+				interpreter.interpret(program);
+			} else {
+				System.setOut(originalOut);
+				originalOut.println("[FAIL] " + filePath.getFileName());
+				originalOut.println("  Unexpected errors:");
+				for (var e : errors) {
+					originalOut.println("    " + e.getLocalizedMessage());
+				}
+				return false;
+			}
 		} catch (Exception e) {
 			baos.reset();
 			System.setOut(originalOut);
@@ -88,7 +114,7 @@ public class Main {
 			System.setOut(originalOut); // Restore original output
 		}
 
-		String actualOutput = baos.toString().trim().replaceAll("\r\n", "\n");
+		String actualOutput = baos.toString().trim().replaceAll("\n", "\n");
 
 		if (actualOutput.equals(expectedOutput)) {
 			originalOut.println("[PASS] " + filePath.getFileName());
@@ -110,8 +136,17 @@ public class Main {
 		String source = Files.readString(filePath);
 		try {
 			List<Stmt> program = parseSource(source);
-			Interpreter interpreter = new Interpreter();
-			interpreter.interpret(program);
+			Checker checker = new Checker();
+			var errors = checker.check(program);
+			if (errors.size() == 0) {
+				Interpreter interpreter = new Interpreter();
+				interpreter.interpret(program);
+			} else {
+				originalOut.println("[FAIL] " + filePath.getFileName());
+				for (var e : errors) {
+					System.err.println(e.getLocalizedMessage());
+				}
+			}
 		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
 		}
@@ -138,6 +173,16 @@ public class Main {
 	private static String getExpectedOutput(String source) {
 		StringBuilder expected = new StringBuilder();
 		Pattern pattern = Pattern.compile("//\s*expect:\s*(.*)");
+		Matcher matcher = pattern.matcher(source);
+		while (matcher.find()) {
+			expected.append(matcher.group(1).trim()).append("\n");
+		}
+		return expected.toString().trim();
+	}
+
+	private static String getExpectedErrors(String source) {
+		StringBuilder expected = new StringBuilder();
+		Pattern pattern = Pattern.compile("//\s*expect-error:\s*(.*)");
 		Matcher matcher = pattern.matcher(source);
 		while (matcher.find()) {
 			expected.append(matcher.group(1).trim()).append("\n");

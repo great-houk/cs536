@@ -224,8 +224,23 @@ public class Parser {
 		// Literal
 		else if (check(TokenType.NUMBER, TokenType.BOOLEAN)) {
 			Token t = advance();
-			Object value = t.type == TokenType.NUMBER ? Integer.parseInt(t.lexeme)
-					: Boolean.parseBoolean(t.lexeme);
+			Object value;
+			if (t.type == TokenType.NUMBER) {
+				try {
+					value = Integer.parseInt(t.lexeme);
+				} catch (NumberFormatException e) {
+					throw new BadlangError("Invalid integer literal '" + t.lexeme + "'", t.line, t.column);
+				}
+			} else if (t.type == TokenType.BOOLEAN) {
+				if (t.lexeme.equals("true"))
+					value = true;
+				else if (t.lexeme.equals("false"))
+					value = false;
+				else
+					throw new BadlangError("Invalid boolean literal '" + t.lexeme + "'", t.line, t.column);
+			} else {
+				throw new BadlangError("Invalid literal type '" + t.type + "'", t.line, t.column);
+			}
 			ret = new Expr.Literal(value, t.line);
 		}
 		// Var Expr
