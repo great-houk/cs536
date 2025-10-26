@@ -46,6 +46,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
 				if (val instanceof Boolean)
 					return val;
 				break;
+			default:
+				break;
 		}
 		throw new BadlangError(
 				"Expected variable of type '" + t.getName() + "' but found type '" + val.getClass().getName() + "'",
@@ -54,7 +56,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
 
 	@Override
 	public ReturnValue visitFunctionStmt(Stmt.Function stmt) {
-		env.defineFun(stmt.name, stmt);
+		// We do a first pass to get all function definitions, so nothing needs to happen here
+		// env.defineFun(stmt.name, stmt);
 		return null;
 	}
 
@@ -258,6 +261,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<ReturnValue> {
 	}
 
 	public Object interpret(List<Stmt> stmts) {
+		// Get all function definitions
+		for (var s : stmts) {
+			if (s instanceof Stmt.Function) {
+				var fun = (Stmt.Function) s;
+				env.defineFun(fun.name, fun);
+			}
+		}
+		// Visit everything
 		for (var s : stmts) {
 			var ret = s.accept(this);
 			if (ret != null)

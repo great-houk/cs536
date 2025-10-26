@@ -1,4 +1,4 @@
-// expect-error: Line 5: Type error: Function 'add' expects 2 arguments but got 1
+// expect-error: Line: 6: Invalid function call, expected 2 parameters, found 1
 fun int add(int a, int b) {
   return a + b;
 }

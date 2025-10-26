@@ -54,7 +54,7 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 	@Override
 	public Void visitIfStmt(Stmt.If stmt) {
 		if (!sameType(stmt.condition.accept(this), VarType.BOOL)) {
-			errors.add(new BadlangError("Invalid condition, doesn't evaluate to bool", stmt.line));
+			errors.add(new BadlangError("Invalid condition, doesn't evaluate to type 'bool'", stmt.line));
 		}
 
 		enterEnv();
@@ -84,7 +84,7 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 			var type = stmt.value.accept(this);
 			if (!sameType(type, retType)) {
 				errors.add(new BadlangError(
-						"Invalid return type, expected '" + retType.getName() + "', found type '" + type.getName()
+						"Invalid return type, expected type '" + retType.getName() + "', found type '" + type.getName()
 								+ "'",
 						stmt.line));
 			}
@@ -104,7 +104,11 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 						stmt.line));
 			}
 		}
-		env.defineVar(stmt.name, stmt.type, stmt.line);
+		try {
+			env.defineVar(stmt.name, stmt.type, stmt.line);
+		} catch (BadlangError e) {
+			errors.add(e);
+		}
 		return null;
 	}
 
@@ -121,7 +125,7 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 
 		if (!sameType(varType, exprType))
 			errors.add(new BadlangError(
-					"Invalid assignemnt, expected type '" + varType.getName() + "', found '" + exprType.getName() + "'",
+					"Invalid assignment, expected type '" + varType.getName() + "', found '" + exprType.getName() + "'",
 					stmt.line));
 
 		return null;
@@ -130,7 +134,7 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 	@Override
 	public Void visitWhileStmt(Stmt.While stmt) {
 		if (!sameType(stmt.condition.accept(this), VarType.BOOL)) {
-			errors.add(new BadlangError("Invalid condition, doesn't evaluate to bool", stmt.line));
+			errors.add(new BadlangError("Invalid condition, doesn't evaluate to type 'bool'", stmt.line));
 		}
 		enterEnv();
 		stmt.body.accept(this);
@@ -140,8 +144,12 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 
 	@Override
 	public VarType visitBinaryExpr(Expr.Binary expr) {
+		var left = expr.left.accept(this);
+		var right = expr.right.accept(this);
+
 		VarType argType = VarType.ERROR;
 		VarType retType = VarType.ERROR;
+
 		switch (expr.operator) {
 			case PLUS:
 			case MINUS:
@@ -156,28 +164,29 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 				argType = VarType.BOOL;
 				retType = VarType.BOOL;
 				break;
-			case EQUAL:
 			case GREATER:
 			case GREATER_EQUAL:
 			case LESS:
 			case LESS_EQUAL:
-			case NOT_EQUAL:
 				argType = VarType.INT;
+				retType = VarType.BOOL;
+				break;
+			case EQUAL:
+			case NOT_EQUAL:
+				argType = left;
 				retType = VarType.BOOL;
 				break;
 		}
 
-		var left = expr.left.accept(this);
-		var right = expr.right.accept(this);
-
 		if (!sameType(left, argType)) {
 			errors.add(new BadlangError(
-					"Invalid expression type, expected '" + argType.getName() + "', found '" + left.getName() + "'",
+					"Invalid operand type, expected '" + argType.getName() + "', found '" + left.getName() + "'",
 					expr.line));
 		}
 		if (!sameType(right, argType)) {
 			errors.add(new BadlangError(
-					"Invalid expression type, expected '" + argType.getName() + "', found '" + right.getName() + "'",
+					"Invalid operand type, expected '" + argType.getName() + "', found '" + right.getName()
+							+ "'",
 					expr.line));
 		}
 
@@ -199,14 +208,14 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 		if (expr.operator == Operator.MINUS) {
 			var type = expr.right.accept(this);
 			if (!sameType(type, VarType.INT)) {
-				errors.add(new BadlangError("Invalid expression type, expected 'int', found '" + type.getName() + "'",
+				errors.add(new BadlangError("Invalid operand type, expected 'int', found '" + type.getName() + "'",
 						expr.line));
 			}
 			return VarType.INT;
 		} else if (expr.operator == Operator.NOT) {
 			var type = expr.right.accept(this);
 			if (!sameType(type, VarType.BOOL)) {
-				errors.add(new BadlangError("Invalid expression type, expected 'bool', found '" + type.getName() + "'",
+				errors.add(new BadlangError("Invalid operand type, expected 'bool', found '" + type.getName() + "'",
 						expr.line));
 			}
 			return VarType.BOOL;
@@ -232,15 +241,15 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 			var fun = env.getFun(expr.name, expr.line);
 
 			if (expr.arguments.size() != fun.params.size()) {
-				errors.add(new BadlangError("Invalid function call, expected '" + fun.params.size()
-						+ "' parameters, found '" + expr.arguments.size() + "'", expr.line));
+				errors.add(new BadlangError("Invalid function call, expected " + fun.params.size()
+						+ " parameters, found " + expr.arguments.size(), expr.line));
 			} else {
 				for (int i = 0; i < expr.arguments.size(); i++) {
 					var expType = fun.params.get(i).type();
 					var type = expr.arguments.get(i).accept(this);
 					if (!sameType(type, expType)) {
 						errors.add(new BadlangError("Invalid function parameter, expected type '" + expType.getName()
-								+ "', found type '" + type.getName() + "'", i));
+								+ "', found type '" + type.getName() + "'", expr.line));
 					}
 				}
 			}

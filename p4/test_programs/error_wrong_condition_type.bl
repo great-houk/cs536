@@ -1,4 +1,4 @@
-// expect-error: Line 2: Type error: Condition must be 'bool', found 'int'
+// expect-error: Line: 3: Invalid condition, doesn't evaluate to type 'bool'
 int x = 5;
 if (x) {
   print x;

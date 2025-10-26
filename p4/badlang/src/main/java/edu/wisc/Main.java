@@ -81,7 +81,8 @@ public class Main {
 			var errors = check.check(program);
 			if (!expectedErrors.isEmpty()) {
 				System.setOut(originalOut);
-				String actualErrors = errors.stream().map(BadlangError::getLocalizedMessage).collect(Collectors.joining("\n"));
+				String actualErrors = errors.stream().map(BadlangError::getLocalizedMessage)
+						.collect(Collectors.joining("\n"));
 				if (actualErrors.equals(expectedErrors)) {
 					originalOut.println("[PASS] " + filePath.getFileName());
 					return true;
@@ -114,7 +115,7 @@ public class Main {
 			System.setOut(originalOut); // Restore original output
 		}
 
-		String actualOutput = baos.toString().trim().replaceAll("\n", "\n");
+		String actualOutput = baos.toString().trim().replaceAll("\r\n", "\n");
 
 		if (actualOutput.equals(expectedOutput)) {
 			originalOut.println("[PASS] " + filePath.getFileName());
@@ -128,10 +129,10 @@ public class Main {
 	}
 
 	/**
-	 * Run a single file and print the output.
-	 * @param filePath the path to the file.
-	 * @throws IOException if there is an error reading the file.
-	 */
+	* Run a single file and print the output.
+	* @param filePath the path to the file.
+	* @throws IOException if there is an error reading the file.
+	*/
 	private static void runFile(Path filePath) throws IOException {
 		String source = Files.readString(filePath);
 		try {

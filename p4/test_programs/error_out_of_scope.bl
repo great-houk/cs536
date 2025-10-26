@@ -1,4 +1,4 @@
-// expect-error: Line 4: Name error: Undefined variable 'x'
+// expect-error: Line: 5: Undefined variable 'x'.
 {
   int x = 5;
 }

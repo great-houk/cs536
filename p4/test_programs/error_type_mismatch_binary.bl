@@ -1,4 +1,8 @@
-// expect-error: Line 3: Type error: Cannot apply operator '+' to types 'int' and 'bool'
+// expect-error: Line: 6: Invalid operand type, expected 'int', found 'bool'
+// expect-error: Line: 7: Invalid operand type, expected 'int', found 'bool'
+// expect-error: Line: 8: Invalid operand type, expected 'bool', found 'int'
 int x = 5;
 bool b = true;
 int result = x + b;
+bool res = x == b;
+bool res2 = b == x;

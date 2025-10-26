@@ -1,4 +1,4 @@
-// expect-error: Line 2: Type error: Expected return type 'int', found 'bool'
+// expect-error: Line: 3: Invalid return type, expected type 'int', found type 'bool'
 fun int getValue() {
   return true;
 }

@@ -1,2 +1,2 @@
-// expect-error: Line 1: Name error: Undefined function 'factorial'
+// expect-error: Line: 2: Unknown Function 'factorial'
 int result = factorial(5);

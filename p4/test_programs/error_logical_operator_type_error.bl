@@ -1,4 +1,5 @@
-// expect-error: Line 3: Type error: Operator '&&' requires 'bool' operands, found 'int'
+// expect-error: Line: 5: Invalid operand type, expected 'bool', found 'int'
+// expect-error: Line: 5: Invalid operand type, expected 'bool', found 'int'
 int x = 5;
 int y = 10;
 bool result = x && y;

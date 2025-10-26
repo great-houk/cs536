@@ -1,4 +1,4 @@
-// expect-error: Line 5: Type error: Argument 2 type mismatch: expected 'int', found 'bool'
+// expect-error: Line: 6: Invalid function parameter, expected type 'int', found type 'bool'
 fun int add(int a, int b) {
   return a + b;
 }
