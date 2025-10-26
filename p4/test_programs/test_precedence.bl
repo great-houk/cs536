@@ -1,0 +1,9 @@
+// expect: 14
+// expect: false
+int a = 2 + 3 * 4;
+int b = (2 + 3) * 4;
+bool c = true || false && false;
+bool d = (true || false) && false;
+
+print(a);
+print(d);

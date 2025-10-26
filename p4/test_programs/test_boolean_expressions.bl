@@ -1,0 +1,10 @@
+// expect: true
+// expect: false
+// expect: true
+bool x = true;
+bool y = false
+bool z = (x && !y) || (false || true);
+
+print(x);
+print(y);
+print(z);
