@@ -1,0 +1,5 @@
+// expect-error: Line: 3: Functions cannot be nested.
+fun int outer(int a) {
+  fun int inner(int b) { return b; }
+  return a;
+}

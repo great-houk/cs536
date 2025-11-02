@@ -196,7 +196,7 @@ public class Parser {
 		// Paren
 		else if (checkAndAdvance(TokenType.LEFT_PAREN)) {
 			ret = expression();
-			expect("Expect '(' after ')'", TokenType.RIGHT_PAREN);
+			expect("Expect ')' after '('", TokenType.RIGHT_PAREN);
 		}
 		// Call
 		else if (check(TokenType.IDENTIFIER) && checkNext(TokenType.LEFT_PAREN)) {
@@ -218,7 +218,7 @@ public class Parser {
 		// Unary
 		else if (check(TokenType.MINUS, TokenType.BANG)) {
 			Operator op = Operator.fromToken(advance());
-			Expr expr = expression();
+			Expr expr = expressionInRange(endInd);			//changed this to use the current subrange
 			ret = new Expr.Unary(op, expr, expr.line);
 		}
 		// Literal
@@ -325,28 +325,32 @@ public class Parser {
 			current = old;
 			return true;
 		}
-		if (check(TokenType.MINUS)) {
-			current--;
-			if (current < 0
-					|| check(TokenType.COMMA, TokenType.LEFT_PAREN, TokenType.RIGHT_PAREN, TokenType.SEMICOLON)) {
-				current = old;
-				return false;
-			} else {
-				current = old;
-				return true;
-			}
-		}
+		if (check(TokenType.MINUS)) { //need to handle special case this is a binary or a unary
+			boolean isBinary = isBinaryMinus(index);
+			current = old;
+			return isBinary;
+		} 
 
 		current = old;
 		return false;
 	}
 
+	private boolean isBinaryMinus(int index) {//helper method for when there is a minus
+		if (index <= 0) return false;
+		TokenType prev = tokens.get(index - 1).type; //prev is the symbol before the minus sign
+		//tthis will return true (that is is a binary) if the previous symbol was a number, identifier, boolean, or right paren. 
+		return prev == TokenType.IDENTIFIER		
+			|| prev == TokenType.NUMBER
+			|| prev == TokenType.BOOLEAN
+			|| prev == TokenType.RIGHT_PAREN;
+	}
+
 	private int precedence(Token token) {
 		switch (token.type) {
 			case AND_AND:
-				return 1;
-			case OR_OR:
-				return 2;
+				return 2;		//changing this so || is lower, so it will be the split and && will have a higher precedence
+			case OR_OR:			//if && is higher it parses that first and it will be regarded as the split, so each side will be evaluated and then combined, even if on one side there is a || that should have been evaluated first
+				return 1;		//be evaluated and then combined, even if on one side there is a || that should have been evaluated first
 			case EQUAL_EQUAL:
 			case BANG_EQUAL:
 			case LESS_THAN:

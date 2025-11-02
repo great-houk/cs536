@@ -1,0 +1,4 @@
+// expect-error: Line: 2: Invalid condition, doesn't evaluate to type 'bool'
+while (5) {
+  print 1;
+}

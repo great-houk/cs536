@@ -1,0 +1,4 @@
+// expect: 1
+fun int z() { return 1; }
+int r = z();
+print r;

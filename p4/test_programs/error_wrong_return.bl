@@ -1,0 +1,4 @@
+// expect-error: Line: 3: Invalid return: missing value of type 'int'
+fun int f() {
+  return;
+}

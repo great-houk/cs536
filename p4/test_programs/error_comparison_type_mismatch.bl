@@ -1,0 +1,4 @@
+// expect-error: Line: 4: Invalid operand type, expected 'int', found 'bool'
+int x = 1;
+bool b = true;
+bool c = x < b;

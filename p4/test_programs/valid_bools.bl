@@ -1,0 +1,3 @@
+// expect: true
+bool b = (true == false) == false;
+print b;

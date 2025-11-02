@@ -1,0 +1,4 @@
+// expect-error: Line: 3: Invalid operand type, expected 'int', found 'bool'
+// expect-error: Line: 4: Invalid operand type, expected 'bool', found 'int'
+int x = -true;     // unary minus on bool → error
+bool y = !5;       // logical not on int → error

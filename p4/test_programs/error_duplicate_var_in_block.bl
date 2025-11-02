@@ -1,0 +1,5 @@
+// expect-error: Line: 4: Variable 'x' is already defined in this scope.
+{
+  int x = 1;
+  int x = 2;
+}
