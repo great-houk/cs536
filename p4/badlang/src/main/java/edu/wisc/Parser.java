@@ -218,7 +218,7 @@ public class Parser {
 		// Unary
 		else if (check(TokenType.MINUS, TokenType.BANG)) {
 			Operator op = Operator.fromToken(advance());
-			Expr expr = expressionInRange(endInd);			//changed this to use the current subrange
+			Expr expr = expressionInRange(endInd); //changed this to use the current subrange
 			ret = new Expr.Unary(op, expr, expr.line);
 		}
 		// Literal
@@ -329,28 +329,29 @@ public class Parser {
 			boolean isBinary = isBinaryMinus(index);
 			current = old;
 			return isBinary;
-		} 
+		}
 
 		current = old;
 		return false;
 	}
 
 	private boolean isBinaryMinus(int index) {//helper method for when there is a minus
-		if (index <= 0) return false;
+		if (index <= 0)
+			return false;
 		TokenType prev = tokens.get(index - 1).type; //prev is the symbol before the minus sign
 		//tthis will return true (that is is a binary) if the previous symbol was a number, identifier, boolean, or right paren. 
-		return prev == TokenType.IDENTIFIER		
-			|| prev == TokenType.NUMBER
-			|| prev == TokenType.BOOLEAN
-			|| prev == TokenType.RIGHT_PAREN;
+		return prev == TokenType.IDENTIFIER
+				|| prev == TokenType.NUMBER
+				|| prev == TokenType.BOOLEAN
+				|| prev == TokenType.RIGHT_PAREN;
 	}
 
 	private int precedence(Token token) {
 		switch (token.type) {
+			case OR_OR:
+				return 1;
 			case AND_AND:
-				return 2;		//changing this so || is lower, so it will be the split and && will have a higher precedence
-			case OR_OR:			//if && is higher it parses that first and it will be regarded as the split, so each side will be evaluated and then combined, even if on one side there is a || that should have been evaluated first
-				return 1;		//be evaluated and then combined, even if on one side there is a || that should have been evaluated first
+				return 2; // Swapped around to match C's operator precedence
 			case EQUAL_EQUAL:
 			case BANG_EQUAL:
 			case LESS_THAN:

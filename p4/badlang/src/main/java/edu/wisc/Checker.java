@@ -7,8 +7,7 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 	private Environment env;
 	private List<BadlangError> errors;
 	private VarType retType;
-	private int functionDepth = 0;  // 0 = global, >0 = inside a function, added this so we can check for nested functions
-
+	private int functionDepth = 0; // 0 = global, >0 = inside a function, added this so we can check for nested functions
 
 	public Checker() {
 		env = new Environment();
@@ -35,29 +34,33 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 	public Void visitFunctionStmt(Stmt.Function stmt) {
 		// Functions get defined in a first pass in 
 		// the check function, so we don't add them to env here
+
 		if (functionDepth > 0) {
-        	errors.add(new BadlangError("Functions cannot be nested.", stmt.line));
-        	// We still descend so other errors inside can be reported
-    	}
+			errors.add(new BadlangError("Functions cannot be nested.", stmt.line));
+			// We still descend so other errors inside can be reported
+		}
+
 		enterEnv();
-		for (var p : stmt.params){
+		var oldRetType = retType;
+		retType = stmt.returnType;
+		functionDepth++;
+
+		for (var p : stmt.params) {
 			try {
 				env.defineVar(p.name(), p.type(), stmt.line);
 			} catch (BadlangError e) {
 				errors.add(e);
 			}
 		}
-		var oldRetType = retType;
-		retType = stmt.returnType;
 
-		functionDepth++;
-		for (var s : stmt.body){
+		for (var s : stmt.body) {
 			s.accept(this);
 		}
-		functionDepth--;
 
 		retType = oldRetType;
+		functionDepth--;
 		exitEnv();
+
 		return null;
 	}
 
@@ -91,10 +94,11 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 		if (retType == null) {
 			errors.add(new BadlangError("Invalid return statement, not in function", stmt.line));
 			return null;
-		} 
+		}
 
 		if (stmt.value == null) {
-			errors.add(new BadlangError("Invalid return: missing value of type '" + retType.getName() + "'", stmt.line));
+			errors.add(
+					new BadlangError("Invalid return: missing value of type '" + retType.getName() + "'", stmt.line));
 			return null;
 		}
 
@@ -105,7 +109,7 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 							+ "'",
 					stmt.line));
 		}
-		
+
 		return null;
 	}
 
@@ -298,9 +302,9 @@ public class Checker implements Expr.Visitor<VarType>, Stmt.Visitor<Void> {
 		for (var s : program) {
 			if (s instanceof Stmt.Function) {
 				var fun = (Stmt.Function) s;
-				try{
+				try {
 					env.defineFun(fun.name, fun);
-				} catch (BadlangError e){
+				} catch (BadlangError e) {
 					errors.add(e);
 				}
 			}
