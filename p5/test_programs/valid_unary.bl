@@ -1,0 +1,6 @@
+// expect: -5
+// expect: false
+int a = -5;        // valid unary minus
+bool b = !true;    // valid logical not
+print a;
+print b;

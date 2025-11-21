@@ -1,0 +1,6 @@
+// expect: true
+// expect: true
+bool a = true || false && false;  //  true || (false && false) -> true
+bool b = false && true || true;   // should be (false && true) || true -> true
+print a;
+print b;

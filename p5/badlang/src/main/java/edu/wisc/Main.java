@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /** Test harness: compile Badlang -> MIPS, then run in SPIM and assert outputs. */
 public class Main {
@@ -24,55 +29,18 @@ public class Main {
 			throw new RuntimeException("Checker errors:\n" + sb);
 		}
 
-		Asm asm = new Asm();
-		CodegenVisitor cg = new CodegenVisitor(asm);
-		cg.generate(program);
-		return asm.emit();
-	}
-
-	// ---------- Find SPIM executable (CLI) ----------
-	private static String findSpimCommand() {
-		// 1) Allow override with env var
-		String env = System.getenv("SPIM_CMD");
-		if (env != null && !env.isBlank())
-			return env;
-
-		// 2) Try common names; Windows users may need spim.exe in PATH
-		String os = System.getProperty("os.name", "").toLowerCase();
-		String[] candidates = os.contains("win")
-				? new String[] { "spim.exe", "spim" } // prefer .exe on Windows
-				: new String[] { "spim" };
-
-		for (String cmd : candidates) {
-			try {
-				Process p = new ProcessBuilder(cmd, "-version")
-						.redirectErrorStream(true).start();
-				p.waitFor();
-				// If it started at all, assume OK
-				return cmd;
-			} catch (Exception ignore) {
-				/* try next */ }
-		}
-		throw new RuntimeException(
-				"Could not find SPIM. Install it and/or set SPIM_CMD to the full path (e.g. C:\\\\Path\\\\to\\\\spim.exe).");
+		CodegenVisitor cg = new CodegenVisitor();
+		return cg.generate(program);
 	}
 
 	// ---------- Run SPIM on a given .s file and capture stdout ----------
 	private static String runSpimOn(Path asmPath) throws IOException, InterruptedException {
-		// Build command tokens correctly (supports "wsl spim")
-		java.util.List<String> cmd = new java.util.ArrayList<>(java.util.List.of(spimCmdTokens()));
-
-		// WSL needs /mnt/... paths
-		String asmArg = asmPath.toString();
-		boolean viaWSL = !cmd.isEmpty() && cmd.get(0).equalsIgnoreCase("wsl");
-		if (viaWSL)
-			asmArg = toWslPath(asmArg);
-
-		// SPIM 8.x prefers -f; include exceptions runtime for safety
-		cmd.add("-exception");
-		cmd.add("/usr/lib/spim/exceptions.s"); // try /usr/share/... if needed
-		cmd.add("-f");
-		cmd.add(asmArg);
+		// Use spim directly (we're already running inside WSL)
+		java.util.List<String> cmd = java.util.List.of(
+				"spim",
+				"-exception",
+				"-f",
+				asmPath.toString());
 
 		// (Temporarily) do NOT use -quiet so we can see banners/errors
 		// cmd.add(0, "-quiet");
@@ -99,6 +67,11 @@ public class Main {
 
 		int code = p.exitValue();
 		String out = new String(buf);
+		String start = "Loaded: /usr/lib/spim/exceptions.s\n";
+		int prefixInd = out.indexOf(start) + start.length();
+		out = out.substring(prefixInd);
+		// Remove trailing newline
+		out = out.substring(0, out.length() - 1);
 
 		if (code != 0) {
 			throw new RuntimeException("SPIM exited " + code + "\n" + out);
@@ -113,6 +86,17 @@ public class Main {
 		return out;
 	}
 
+	// ---------- Helper: extract expected output lines from source comments ----------
+	private static List<String> extractExpectLines(String source) {
+		List<String> expects = new ArrayList<>();
+		Pattern p = Pattern.compile("//\\s*expect:\\s*(.*)");
+		Matcher m = p.matcher(source);
+		while (m.find()) {
+			expects.add(m.group(1).trim());
+		}
+		return expects;
+	}
+
 	// ---------- One test: compile, run in SPIM, check output contains tokens ----------
 	private static boolean runtimeTest(String blPath, String[] expectContains) {
 		try {
@@ -120,10 +104,20 @@ public class Main {
 			String asm = compileToAsm(src);
 			Path sPath = writeAsmFile(asm, "out.s");
 			String spimOut = runSpimOn(sPath);
+			List<String> lines = spimOut.lines().toList();
 
-			for (String needle : expectContains) {
-				if (!spimOut.contains(needle)) {
-					System.out.println("[FAIL] " + blPath + " — missing in SPIM output: \"" + needle + "\"");
+			// We expect an extra newline
+			if (lines.size() != expectContains.length) {
+				System.out.println("[FAIL] — Extra lines in SPIM output:");
+				System.out.println("----- SPIM OUTPUT -----");
+				System.out.println(spimOut);
+				System.out.println("----- END -----");
+				return false;
+			}
+
+			for (int i = 0; i < expectContains.length; i++) {
+				if (!lines.get(i).equals(expectContains[i])) {
+					System.out.println("[FAIL] " + blPath + " — missing in SPIM output: \"" + expectContains[i] + "\"");
 					System.out.println("----- SPIM OUTPUT -----");
 					System.out.println(spimOut);
 					System.out.println("----- END -----");
@@ -138,53 +132,29 @@ public class Main {
 		}
 	}
 
-	static String toWslPath(String p) {
-		String s = p.replace('\\', '/');
-		if (s.length() >= 2 && Character.isLetter(s.charAt(0)) && s.charAt(1) == ':') {
-			char drive = Character.toLowerCase(s.charAt(0));
-			s = "/mnt/" + drive + s.substring(2);
-		}
-		return s;
-	}
-
-	static String[] spimCmdTokens() {
-		String env = System.getenv("SPIM_CMD"); // e.g., "wsl spim"
-		if (env != null && !env.isBlank()) {
-			return env.trim().split("\\s+"); // ["wsl","spim"]
-		}
-		// Fallbacks: try plain "spim", else "wsl spim"
-		try {
-			Process t = new ProcessBuilder("spim", "-v").redirectErrorStream(true).start();
-			t.waitFor();
-			return new String[] { "spim" };
-		} catch (Exception ignore) {
-			return new String[] { "wsl", "spim" };
-		}
-	}
-
 	public static void main(String[] args) {
 		try {
 			if (args.length == 0) {
-				// ---- No-args mode: run the runtime tests ----
+				// ---- No-args mode: run all .bl files in test_programs ----
+				List<Path> testFiles;
+				try (Stream<Path> s = Files.walk(Path.of("test_programs"))) {
+					testFiles = s.filter(Files::isRegularFile)
+							.filter(p -> p.toString().endsWith(".bl"))
+							.collect(Collectors.toList());
+				}
+
 				int passed = 0, total = 0;
-
-				total++;
-				if (runtimeTest(
-						"test_programs/test1.bl",
-						new String[] { "7", "10", "1" }))
-					passed++;
-
-				total++;
-				if (runtimeTest(
-						"test_programs/test_if_else.bl",
-						new String[] { "111" }))
-					passed++;
-
-				total++;
-				if (runtimeTest(
-						"test_programs/test_call.bl",
-						new String[] { "9" }))
-					passed++;
+				for (Path p : testFiles) {
+					System.out.println("Running " + p.toString());
+					total++;
+					String src = Files.readString(p);
+					List<String> expects = extractExpectLines(src);
+					String[] needles = expects.toArray(new String[0]);
+					if (runtimeTest(p.toString(), needles))
+						passed++;
+					else
+						break;
+				}
 
 				System.out.printf("Runtime tests: %d/%d passed%n", passed, total);
 				if (passed != total)
@@ -202,34 +172,14 @@ public class Main {
 			System.out.println("===== MIPS Assembly (saved to out.s) =====");
 			System.out.println(asm);
 
-			// Prefer SPIM_CMD if set (e.g., "wsl spim"); else try "spim"; else fallback to WSL
-			String env = System.getenv("SPIM_CMD");
-			java.util.List<String> cmd = new java.util.ArrayList<>();
-			if (env != null && !env.isBlank()) {
-				for (String part : env.trim().split("\\s+"))
-					cmd.add(part);
-			} else {
-				try {
-					var test = new ProcessBuilder("spim", "-v").redirectErrorStream(true).start();
-					test.waitFor();
-					cmd.add("spim");
-				} catch (Exception ignore) {
-					cmd.add("wsl");
-					cmd.add("spim");
-				}
-			}
-
+			// Call spim directly (we're already inside WSL)
 			String asmArg = outS.toString();
-			boolean viaWSL = !cmd.isEmpty() && cmd.get(0).equalsIgnoreCase("wsl");
-			if (viaWSL)
-				asmArg = toWslPath(asmArg); // uses your helper
-
-			java.util.List<String> full = new java.util.ArrayList<>(cmd);
-			full.add("-quiet");
-			full.add("-exception");
-			full.add("/usr/lib/spim/exceptions.s"); // try /usr/share/... if needed
-			full.add("-f");
-			full.add(asmArg);
+			java.util.List<String> full = java.util.List.of(
+					"spim",
+					"-quiet",
+					"-exception",
+					"-f",
+					asmArg);
 
 			Process p = new ProcessBuilder(full).redirectErrorStream(true).start();
 			String out = new String(p.getInputStream().readAllBytes());

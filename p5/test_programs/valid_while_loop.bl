@@ -1,0 +1,15 @@
+// expect: 0
+// expect: 1
+// expect: 2
+// expect: 3
+// expect: 4
+// expect: 5
+// expect: 6
+// expect: 7
+// expect: 8
+// expect: 9
+int x = 0;
+while (x < 10) {
+  print x;
+  x = x + 1;
+}
